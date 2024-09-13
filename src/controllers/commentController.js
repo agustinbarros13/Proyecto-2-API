@@ -2,7 +2,7 @@ const Comment = require('../models/Comment');
 
 const getComments = async (req, res) => {
   try {
-    const comments = await Comment.find().populate('author').populate('post');
+    const comments = await Comment.find().populate('user').populate('post');
     res.json(comments);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -10,16 +10,15 @@ const getComments = async (req, res) => {
 };
 
 const createComment = async (req, res) => {
-  const { content, author, post } = req.body;
+  const { content, user, post } = req.body;
+  const newComment = new Comment({ content, user, post });
   try {
-    const newComment = new Comment({ content, author, post });
     await newComment.save();
     res.status(201).json(newComment);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 const updateComment = async (req, res) => {
   const { id } = req.params;
@@ -32,7 +31,6 @@ const updateComment = async (req, res) => {
   }
 };
 
-
 const deleteComment = async (req, res) => {
   const { id } = req.params;
   try {
@@ -44,3 +42,4 @@ const deleteComment = async (req, res) => {
 };
 
 module.exports = { getComments, createComment, updateComment, deleteComment };
+

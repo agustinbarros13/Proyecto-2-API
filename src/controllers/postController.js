@@ -1,6 +1,4 @@
 const Post = require('../models/Post');
-
-
 const getPosts = async (req, res) => {
   try {
     const posts = await Post.find().populate('author').populate('comments');
@@ -9,20 +7,16 @@ const getPosts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
 const createPost = async (req, res) => {
   const { title, content, author } = req.body;
+  const newPost = new Post({ title, content, author });
   try {
-    const newPost = new Post({ title, content, author });
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
-
 const updatePost = async (req, res) => {
   const { id } = req.params;
   const { title, content } = req.body;
@@ -33,8 +27,6 @@ const updatePost = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
 const deletePost = async (req, res) => {
   const { id } = req.params;
   try {
@@ -44,5 +36,5 @@ const deletePost = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 module.exports = { getPosts, createPost, updatePost, deletePost };
+
