@@ -1,45 +1,42 @@
 const User = require('../models/User');
 
-const getUsers = async (req, res) => {
+const deleteUser = async (req, res) => {
   try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    const userToDelete = await User.findById(req.params.id);
 
-const createUser = async (req, res) => {
-  const { username, password } = req.body;
-  const newUser = new User({ username, password });
-  try {
-    await newUser.save();
-    res.status(201).json(newUser);
+    if (!userToDelete) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (req.user.role !== 'admin' && req.user._id.toString() !== req.params.id) {
+      return res.status(403).json({ message: 'You can only delete your own account' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
 const updateUserRole = async (req, res) => {
-  const { id } = req.params;
-  const { role } = req.body;
   try {
-    const user = await User.findByIdAndUpdate(id, { role }, { new: true });
-    res.json(user);
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can change roles' });
+    }
+
+    user.role = req.body.role;
+    await user.save();
+
+    res.status(200).json({ message: 'User role updated successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-const deleteUser = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await User.findByIdAndDelete(id);
-    res.json({ message: 'User deleted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-module.exports = { getUsers, createUser, updateUserRole, deleteUser };
-
+module.exports = { deleteUser, updateUserRole };

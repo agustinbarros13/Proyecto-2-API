@@ -1,41 +1,43 @@
 const mongoose = require('mongoose');
-const User = require('./models/User');
-const Post = require('./models/Post');
-const Comment = require('./models/Comment');
-const dbConfig = require('./config/db');
-const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
+const connectDB = require('./config/database');
 
-dotenv.config();
-dbConfig();
+connectDB();
 
-const seedDatabase = async () => {
+const seedData = async () => {
   try {
     await User.deleteMany();
-    await Post.deleteMany();
-    await Comment.deleteMany();
 
-    const users = await User.insertMany([
-      { username: 'admin', password: 'password123', role: 'admin' },
-      { username: 'user1', password: 'password123', role: 'user' },
-    ]);
+    const adminPassword = await bcrypt.hash('admin123', 10);
+    const userPassword = await bcrypt.hash('user123', 10);
 
-    const posts = await Post.insertMany([
-      { title: 'First Post', content: 'This is the first post.', author: users[0]._id },
-      { title: 'Second Post', content: 'This is the second post.', author: users[1]._id },
-    ]);
+    const users = [
+      {
+        username: 'admin',
+        password: adminPassword,
+        role: 'admin',
+      },
+      {
+        username: 'user1',
+        password: userPassword,
+        role: 'user',
+      },
+      {
+        username: 'user2',
+        password: userPassword,
+        role: 'user',
+      },
+    ];
 
-    await Comment.insertMany([
-      { content: 'Great post!', user: users[1]._id, post: posts[0]._id },
-      { content: 'Thanks for sharing!', user: users[0]._id, post: posts[1]._id },
-    ]);
-
-    console.log('Database seeded successfully');
+    await User.insertMany(users);
+    console.log('Seed data inserted successfully');
+    process.exit();
   } catch (error) {
-    console.error('Error seeding the database:', error);
-  } finally {
-    mongoose.connection.close();
+    console.error('Error inserting seed data:', error);
+    process.exit(1);
   }
 };
 
-seedDatabase();
+seedData();
 

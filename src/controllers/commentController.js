@@ -11,8 +11,13 @@ const getComments = async (req, res) => {
 
 const createComment = async (req, res) => {
   const { content, user, post } = req.body;
-  const newComment = new Comment({ content, user, post });
+
+  if (!content || !user || !post) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
   try {
+    const newComment = new Comment({ content, user, post });
     await newComment.save();
     res.status(201).json(newComment);
   } catch (error) {
@@ -42,4 +47,3 @@ const deleteComment = async (req, res) => {
 };
 
 module.exports = { getComments, createComment, updateComment, deleteComment };
-

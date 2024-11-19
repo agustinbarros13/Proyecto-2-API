@@ -11,8 +11,13 @@ const getPosts = async (req, res) => {
 
 const createPost = async (req, res) => {
   const { title, content, author } = req.body;
-  const newPost = new Post({ title, content, author });
+
+  if (!title || !content || !author) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
   try {
+    const newPost = new Post({ title, content, author });
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
@@ -42,4 +47,3 @@ const deletePost = async (req, res) => {
 };
 
 module.exports = { getPosts, createPost, updatePost, deletePost };
-
